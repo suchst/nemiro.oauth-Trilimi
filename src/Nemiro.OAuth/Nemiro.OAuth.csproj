@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <Version>1.13.0.2828</Version>
-    <TargetFrameworks>net35;net40;net45;net451;net452;net46;net461;net462;net47</TargetFrameworks>
+    <TargetFrameworks>net472</TargetFrameworks>
     <AssemblyName>Nemiro.OAuth</AssemblyName>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>true</GenerateAssemblyProductAttribute>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Nemiro.OAuth.snk</AssemblyOriginatorKeyFile>
     <Authors>Aleksey Nemiro</Authors>
     <Copyright>Copyright © Aleksey Nemiro, 2014-2017</Copyright>

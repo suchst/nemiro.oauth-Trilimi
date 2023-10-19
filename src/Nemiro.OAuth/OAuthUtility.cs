@@ -493,7 +493,7 @@ namespace Nemiro.OAuth
 
       // set protocols
       var securityProtocol = ServicePointManager.SecurityProtocol;
-      ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;
+      ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
       // ignore errors
       var serverCertificateValidationCallback = ServicePointManager.ServerCertificateValidationCallback;
