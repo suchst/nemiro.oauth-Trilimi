@@ -15,6 +15,7 @@
 // ----------------------------------------------------------------------------
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
@@ -32,17 +33,16 @@ namespace Nemiro.OAuth
   /// </remarks>
   internal class DefaultOAuthRequestsProvider : IOAuthRequestsProvider
   {
-
     private Timer Timer = new Timer(60000);
 
     /// <summary>
     /// Gets the list of active requests.
     /// </summary>
-    internal Dictionary<string, OAuthRequest> Requests { get; private set; }
+    internal ConcurrentDictionary<string, OAuthRequest> Requests { get; private set; }
 
     public DefaultOAuthRequestsProvider()
     {
-      this.Requests = new Dictionary<string, OAuthRequest>();
+      this.Requests = new ConcurrentDictionary<string, OAuthRequest>();
       this.Timer.Elapsed += Timer_Elapsed;
     }
 
@@ -53,7 +53,7 @@ namespace Nemiro.OAuth
     /// <param name="e">The event data.</param>
     private void Timer_Elapsed(object sender, EventArgs e)
     {
-      if (this.Requests.Count <= 0)
+      if (this.Requests.IsEmpty)
       {
         // no active requests, stop the time
         this.Timer.Stop();
@@ -67,14 +67,11 @@ namespace Nemiro.OAuth
 
       foreach (var itm in toRemove)
       {
-        if (this.Requests.ContainsKey(itm.Key))
-        {
-          OAuthManager.RemoveRequest(itm.Key);
-        }
+        OAuthManager.RemoveRequest(itm.Key);
       }
 
       // change the status of the timer
-      this.Timer.Enabled = (this.Requests.Count > 0);
+      this.Timer.Enabled = !this.Requests.IsEmpty;
     }
 
     /// <summary>
@@ -91,34 +88,40 @@ namespace Nemiro.OAuth
         throw new ArgumentNullException("key");
       }
 
-      this.Requests.Add(key, new OAuthRequest(clientName, client, state));
+      if (!this.Requests.TryAdd(key, new OAuthRequest(clientName, client, state)))
+      {
+        throw new ArgumentException($"A request with the key '{key}' already exists.");
+      }
 
       this.Timer.Start();
     }
 
     /// <summary>
-    /// Determines whether the storage contains an entry with the specified key.
+    /// Determines whether the collection contains a request with the specified key.
     /// </summary>
-    /// <param name="key">The key to locate in the storage.</param>
+    /// <param name="key">The unique key of request.</param>
+    /// <returns><c>true</c> if the collection contains a request with the specified key; otherwise, <c>false</c>.</returns>
     public bool ContainsKey(string key)
     {
       return this.Requests.ContainsKey(key);
     }
 
     /// <summary>
-    /// Gets the specified request by key.
+    /// Gets the request with the specified key.
     /// </summary>
     /// <param name="key">The unique key of request.</param>
+    /// <returns>The request with the specified key.</returns>
     public OAuthRequest Get(string key)
     {
       return this.Get<OAuthRequest>(key);
     }
 
     /// <summary>
-    /// Gets the specified request by key.
+    /// Gets the request with the specified key and type.
     /// </summary>
-    /// <typeparam name="T">The type based <see cref="OAuthRequest"/>.</typeparam>
+    /// <typeparam name="T">The type of request.</typeparam>
     /// <param name="key">The unique key of request.</param>
+    /// <returns>The request with the specified key and type.</returns>
     public T Get<T>(string key) where T : OAuthRequest
     {
       if (String.IsNullOrEmpty(key))
@@ -126,13 +129,17 @@ namespace Nemiro.OAuth
         throw new ArgumentNullException("key");
       }
 
-      return (T)this.Requests[key];
+      if (this.Requests.TryGetValue(key, out var value))
+      {
+        return (T)value;
+      }
+      throw new KeyNotFoundException($"No request found for key '{key}'.");
     }
 
     /// <summary>
-    /// Removes the request from collection.
+    /// Removes the request with the specified key from the collection.
     /// </summary>
-    /// <param name="key">The key of request to remove.</param>
+    /// <param name="key">The unique key of request.</param>
     public void Remove(string key)
     {
       if (String.IsNullOrEmpty(key))
@@ -140,16 +147,12 @@ namespace Nemiro.OAuth
         throw new ArgumentNullException("key");
       }
 
-      if (this.Requests.ContainsKey(key))
-      {
-        this.Requests.Remove(key);
-      }
-
-      this.Timer.Enabled = (this.Requests.Count > 0);
+      this.Requests.TryRemove(key, out _);
+      this.Timer.Enabled = !this.Requests.IsEmpty;
     }
-    
+
     /// <summary>
-    /// Removes all requests from collection.
+    /// Removes all requests from the collection.
     /// </summary>
     public void Clear()
     {
@@ -158,11 +161,13 @@ namespace Nemiro.OAuth
     }
 
     /// <summary>
-    /// Returns an enumerator that iterates through a collection.
+    /// Returns an enumerator that iterates through the collection.
     /// </summary>
+    /// <returns>An enumerator that can be used to iterate through the collection.</returns>
     public IEnumerator GetEnumerator()
     {
-      return this.Requests.GetEnumerator();
+      // Return a snapshot to avoid enumeration issues
+      return this.Requests.ToList().GetEnumerator();
     }
 
   }

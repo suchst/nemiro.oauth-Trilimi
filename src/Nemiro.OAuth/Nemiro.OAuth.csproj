@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.13.0.2828</Version>
+    <Version>1.13.1.0000</Version>
     <TargetFrameworks>net472</TargetFrameworks>
     <AssemblyName>Nemiro.OAuth</AssemblyName>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -37,7 +37,7 @@ This package is no different from v1.13.0-beta1. Just removed from the status of
     <RepositoryUrl>https://github.com/alekseynemiro/nemiro.oauth.dll</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageOutputPath>F:\Nuget</PackageOutputPath>
+    <PackageOutputPath>D:\Nuget</PackageOutputPath>
     <NeutralLanguage />
   </PropertyGroup>
 

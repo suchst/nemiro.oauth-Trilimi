@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net35;net40;net45;net451;net452;net46;net461;net462;net47</TargetFrameworks>
+    <TargetFrameworks>net472</TargetFrameworks>
     <AssemblyName>Nemiro.OAuth.Test</AssemblyName>    
     <RootNamespace>Nemiro.OAuth.Test</RootNamespace>
     <IsPackable>False</IsPackable>
